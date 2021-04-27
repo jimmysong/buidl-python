@@ -14,7 +14,7 @@ from buidl.hd import (
     parse_wshsortedmulti,
 )
 from buidl.helper import encode_base58_checksum
-from buidl.mnemonic import WORD_LIST
+from buidl.mnemonic import get_bip39_index
 
 
 class HDTest(TestCase):
@@ -404,7 +404,8 @@ class HDTest(TestCase):
     def test_zprv(self):
         mnemonic, priv = HDPrivateKey.generate(extra_entropy=1 << 128)
         for word in mnemonic.split():
-            self.assertTrue(word in WORD_LIST)
+            # should throw an error if this is not a word
+            get_bip39_index(word)
         zprv = priv.xprv(version=bytes.fromhex("04b2430c"))
         self.assertTrue(zprv.startswith("zprv"))
         zpub = priv.pub.xpub(version=bytes.fromhex("04b24746"))

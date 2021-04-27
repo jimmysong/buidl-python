@@ -15,7 +15,12 @@ from buidl.helper import (
     raw_decode_base58,
     sha256,
 )
-from buidl.mnemonic import secure_mnemonic, WORD_LOOKUP, WORD_LIST
+from buidl.mnemonic import (
+    all_bip39_words,
+    get_bip39_index,
+    normalize_bip39_word,
+    secure_mnemonic,
+)
 from buidl.op import OP_CODE_NAMES_LOOKUP
 from buidl.script import P2WSHScriptPubKey, WitnessScript
 
@@ -357,7 +362,7 @@ class HDPrivateKey:
         # each word is 11 bits
         for word in words:
             # get the number that the word represents using WORD_LOOKUP
-            index = WORD_LOOKUP[word]
+            index = get_bip39_index(word)
             # left-shift the number by 11 bits and bitwise-or the index
             number = (number << 11) | index
         # checksum is the last n bits where n = (# of words / 3)
@@ -377,7 +382,7 @@ class HDPrivateKey:
         # normalize in case we got a mnemonic that's just the first 4 letters
         normalized_words = []
         for word in words:
-            normalized_words.append(WORD_LIST[WORD_LOOKUP[word]])
+            normalized_words.append(normalize_bip39_word(word))
         normalized_mnemonic = " ".join(normalized_words)
         # salt is b'mnemonic' + password
         salt = b"mnemonic" + password
@@ -580,7 +585,7 @@ def calc_valid_seedpicker_checksums(first_words):
 
     For normal useage, just grab the first one only
     """
-    for word in WORD_LIST:
+    for word in all_bip39_words():
         try:
             HDPrivateKey.from_mnemonic(first_words + " " + word)
             yield (word)
